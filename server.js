@@ -1,6 +1,8 @@
 const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
 const graphql = require('graphql');
+const axios = require('axios');
+
 const { GraphQLObjectType, GraphQLInt, GraphQLString, GraphQLList } = graphql;
 
 
@@ -22,6 +24,16 @@ const UserType = new GraphQLObjectType({
     name: { type: GraphQLString },
     phone: { type: GraphQLString },
     email: { type: GraphQLString }
+  })
+});
+
+const PostType = new GraphQLObjectType({
+  name: "Post",
+  fields: () => ({
+    userId: { type: GraphQLInt },
+    id: { type: GraphQLInt },
+    title: { type: GraphQLString },
+    body: { type: GraphQLString }
   })
 });
 
@@ -108,7 +120,24 @@ const RootQuery = new GraphQLObjectType({
 
         return users;
       }
+    },
+    posts: {
+      type: new GraphQLList(PostType),
+      resolve(){
+        return axios.get("https://jsonplaceholder.typicode.com/posts")
+          .then( res => {
+            console.log(res);
+            return res.data;
+          })
+          .catch( err => {
+            console.log(err);
+          })
+          .finally( ()=> {
+            console.log('All are over!');
+          });
+      }
     }
+
   }
 }); // Let's focus on this one now
 
